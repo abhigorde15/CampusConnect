@@ -22,7 +22,8 @@ const filteredNotes = dummyNotes.filter(note =>
 );
 
   return (
-    <div className="font-sans px-4 py-8 bg-gray-50 min-h-screen">
+    <div className="font-sans px-4 py-8 bg-gradient-to-br from-blue-50 via-purple-50 to-white
+ min-h-screen">
       <Toaster position="top-right" reverseOrder={false} />
 
       <h1 className="text-5xl font-bold text-center mb-2 text-gray-900">All Engineering Notes</h1>

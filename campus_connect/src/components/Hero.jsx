@@ -2,7 +2,7 @@
 import { toast } from 'react-hot-toast';
 import hero from '../assets/hero_1.svg'
 const Hero = () => (
-  <section className="text-center px-4 bg-blue-600 min-h-screen  \ mb-3 bg-gray-50  flex flex-col justify-center">
+  <section className="text-center px-4  min-h-screen  \ mb-3  bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-100  flex flex-col justify-center">
     <div className="flex flex-col lg:flex-row items-center justify-center">
       <div className="lg:w-2/3 p-10 mb-20">
         <h1 className="text-4xl md:text-6xl font-bold mb-4 text-gray-900 lg:leading-16 tracking-wide">

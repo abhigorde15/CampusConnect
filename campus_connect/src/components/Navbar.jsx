@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-
+ const navigate =  useNavigate()
   return (
     <>
       <nav className="flex justify-between items-center p-4 bg-white shadow-md sticky top-0 z-50 ">
@@ -10,17 +11,23 @@ const Navbar = () => {
 
         {/* Desktop nav */}
         <ul className="hidden sm:flex space-x-6 text-gray-700 font-medium">
-          <li className="hover:text-blue-600 cursor-pointer">Home</li>
-          <li className="hover:text-blue-600 cursor-pointer">Notes</li>
-          <li className="hover:text-blue-600 cursor-pointer">Chat Groups</li>
-          <li className="hover:text-blue-600 cursor-pointer">Marketplace</li>
-          <li className="hover:text-blue-600 cursor-pointer">Events</li>
+        <a href="/"> <li className="hover:text-blue-600 cursor-pointer">Home</li></a>  
+        <a href="/notes"> <li className="hover:text-blue-600 cursor-pointer">Notes</li></a>  
+        <a  href="/chat_groups"><li className="hover:text-blue-600 cursor-pointer">Chat Groups</li></a>
+        <a  href="/chat_groups"><li className="hover:text-blue-600 cursor-pointer">Marketplace</li></a>
+        <a  href="/chat_groups"><li className="hover:text-blue-600 cursor-pointer">Events</li></a>
         </ul>
 
         {/* Desktop login */}
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition hidden sm:inline">
+      <div>
+         <button onClick={()=>navigate('/auth')} className="bg-blue-600 text-white px-4 py-1 rounded mr-3 hover:bg-blue-700 transition hidden sm:inline">
           Login
         </button>
+     <button onClick={()=>navigate('/signup')} className="px-4 py-1 rounded font-medium border border-[rgb(20,71,230)] text-[rgb(20,71,230)] hover:bg-[rgb(20,71,230)] hover:text-white transition">
+        Sign Up
+     </button>
+      </div>
+      
 
         {/* Hamburger icon (mobile only) */}
         <div className="sm:hidden">
@@ -55,9 +62,13 @@ const Navbar = () => {
           <li className="hover:text-blue-600 cursor-pointer">Marketplace</li>
           <li className="hover:text-blue-600 cursor-pointer">Events</li>
           <li>
-            <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-              Login
+            <button onClick={()=>navigate('/auth')} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+              Login 
             </button>
+           
+          </li>
+          <li>
+           
           </li>
         </ul>
       </div>
