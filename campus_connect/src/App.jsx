@@ -9,6 +9,8 @@ import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/RegisterPage'
 import ChatGroupPage from './pages/ChatGroupPage'
 import ChatPage from './components/ChatPage'
+import AdminProfilePage from './pages/AdminProfilePage'
+import UserProfilePage from './pages/UserProfilePage'
 function App() {
   
 
@@ -23,6 +25,8 @@ function App() {
         <Route path='/chat_groups' element={ <ChatGroupPage/>} />
         {/* <Route path='/chat/cse' element={ <JoinCreateChat/>} /> */}
          <Route path='/chat/cse' element={ <ChatPage/>} /> 
+         <Route path='/admin/profile' element={<AdminProfilePage/>} /> 
+          <Route path='/user/profile' element={ <UserProfilePage />} /> 
       </Routes>
     
      <Footer />
