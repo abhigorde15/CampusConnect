@@ -22,7 +22,7 @@ public class NotesService {
         return noteRepository.save(note);
     }
 
-    public void deleteNote(Long id) {
+    public void deleteNote(int id) {
         noteRepository.deleteById(id);
     }
 

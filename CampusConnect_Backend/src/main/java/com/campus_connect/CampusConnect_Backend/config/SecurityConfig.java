@@ -37,9 +37,13 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll()
-                .anyRequest().authenticated()
-            ).userDetailsService(customUserDetailsService).exceptionHandling(e->e.accessDeniedHandler(accessDeniedHandler))
+            	    .requestMatchers("/api/chat/groups").permitAll()
+            	    .requestMatchers("/ws/**").permitAll()// only GET /groups public
+            	    .requestMatchers("/api/auth/**").permitAll()
+            	    .requestMatchers("/api/**").permitAll()     // your login/register routes if needed
+            	    .anyRequest().authenticated()
+            	)
+            .userDetailsService(customUserDetailsService).exceptionHandling(e->e.accessDeniedHandler(accessDeniedHandler))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
