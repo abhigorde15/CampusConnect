@@ -1,37 +1,46 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const UserProfilePage = () => {
   const [user, setUser] = useState({});
   const [notes, setNotes] = useState([]);
-  const [listings, setListings] = useState([]);
-  const [purchases, setPurchases] = useState([]);
+  const [listings] = useState([
+    { id: 1, name: 'Scientific Calculator', category: 'Electronics', price: 300, status: 'Available' },
+    { id: 2, name: 'Basic Civil Book', category: 'Books', price: 150, status: 'Sold' },
+  ]);
+  const [purchases] = useState([
+    { id: 1, name: 'Engineering Drawing Set', sellerName: 'Ravi Patil', price: 250, date: '2025-06-12' },
+    { id: 2, name: 'Second-hand Laptop Stand', sellerName: 'Pooja Sharma', price: 500, date: '2025-06-15' },
+  ]);
+
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
-    // Dummy user data
-    setUser({
-      name: 'Abhishek Gorde',
-      email: 'abhishek@kkwagh.edu.in',
-      branch: 'Information Technology'
-    });
+    const fetchData = async () => {
+      try {
+        const userRes = await axios.get('http://localhost:8080/api/auth/user', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUser(userRes.data);
 
-    // Dummy notes data
-    setNotes([
-      { id: 1, title: 'DBMS Notes', semester: 'Sem 4', isPremium: false, date: '2025-03-15' },
-      { id: 2, title: 'Operating System Notes', semester: 'Sem 4', isPremium: true, date: '2025-04-02' },
-    ]);
+        const notesRes = await axios.get(`http://localhost:8080/api/notes/user/${userRes.data.id}`);
+        setNotes(notesRes.data);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      }
+    };
 
-    // Dummy marketplace listings
-    setListings([
-      { id: 1, name: 'Scientific Calculator', category: 'Electronics', price: 300, status: 'Available' },
-      { id: 2, name: 'Basic Civil Book', category: 'Books', price: 150, status: 'Sold' },
-    ]);
+    fetchData();
+  }, [token]);
 
-    // Dummy purchases
-    setPurchases([
-      { id: 1, name: 'Engineering Drawing Set', sellerName: 'Ravi Patil', price: 250, date: '2025-06-12' },
-      { id: 2, name: 'Second-hand Laptop Stand', sellerName: 'Pooja Sharma', price: 500, date: '2025-06-15' },
-    ]);
-  }, []);
+  const handleDeleteNote = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8080/api/notes/${id}`);
+      setNotes(prev => prev.filter(note => note.id !== id));
+    } catch (err) {
+      console.error('Failed to delete note:', err);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 text-gray-800">
@@ -51,9 +60,9 @@ const UserProfilePage = () => {
             <li key={note.id} className="flex justify-between items-center border-b pb-2">
               <div>
                 <p className="font-medium">{note.title} ({note.semester})</p>
-                <p className="text-sm text-gray-500">{note.isPremium ? 'Premium' : 'Free'} • Uploaded on {note.date}</p>
+                <p className="text-sm text-gray-500">{note.isPremium ? 'Premium' : 'Free'} • Uploaded on {note.uploadedAt?.slice(0, 10)}</p>
               </div>
-              <button className="text-red-500 hover:text-red-700 text-sm">Delete</button>
+              <button onClick={() => handleDeleteNote(note.id)} className="text-red-500 hover:text-red-700 text-sm">Delete</button>
             </li>
           ))}
         </ul>
