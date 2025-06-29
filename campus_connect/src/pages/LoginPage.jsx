@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
 import { loginUser } from "../services/AuthService"; // adjust path if needed
+import { jwtDecode } from "jwt-decode";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -22,6 +23,9 @@ const LoginPage = () => {
     try {
       const token = await loginUser(user);
       localStorage.setItem("token", token); 
+      const decoded = jwtDecode(token);
+      localStorage.setItem("username", decoded.sub); 
+      console.log("Username"+decoded.sub)
       toast.success("Login successful");
       setTimeout(() => navigate("/"), 1000); // redirect after login
     } catch (err) {
