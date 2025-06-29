@@ -21,17 +21,24 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
+  
     @Column( nullable = false)
     private String name;
     @Column(unique = true, nullable = false)
     private String email;
     private String year;
+    private boolean isVerified = false;
     private String branch;
    
-	
+    private String verificationCode;
     
-    public String getEmail() {
+    public String getVerificationCode() {
+		return verificationCode;
+	}
+	public void setVerificationCode(String verificationCode) {
+		this.verificationCode = verificationCode;
+	}
+	public String getEmail() {
 		return email;
 	}
 	public void setEmail(String email) {
@@ -90,6 +97,12 @@ public class User {
 	public String toString() {
 		return "User [id=" + id + ", name=" + name + ", email=" + email + ", year=" + year + ", branch=" + branch
 				+ ", password=" + password + ", role=" + role + "]";
+	}
+	public boolean isVerified() {
+		return isVerified;
+	}
+	public void setVerified(boolean isVerified) {
+		this.isVerified = isVerified;
 	}
     
     

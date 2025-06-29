@@ -25,7 +25,7 @@ const LoginPage = () => {
       localStorage.setItem("token", token); 
       const decoded = jwtDecode(token);
       localStorage.setItem("username", decoded.sub); 
-      console.log("Username"+decoded.sub)
+      localStorage.setItem("name", decoded.name); 
       toast.success("Login successful");
       setTimeout(() => navigate("/"), 1000); // redirect after login
     } catch (err) {

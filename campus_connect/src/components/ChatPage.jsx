@@ -12,7 +12,7 @@ const ChatPage = () => {
   const chatRef = useRef(null);
   const stompClientRef = useRef(null);
 
-  const username = localStorage.getItem("username") || "You";
+  const name = localStorage.getItem("name") || "You";
 
   // Scroll to bottom when new messages appear
   useEffect(() => {
@@ -75,7 +75,7 @@ const ChatPage = () => {
     if (!input.trim() || !stompClientRef.current?.connected) return;
 
     const payload = {
-      senderName: username,
+      senderName: name,
       content: input.trim(),
     };
 
@@ -91,7 +91,7 @@ const ChatPage = () => {
     <div className="flex flex-col h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-blue-600 text-white px-6 py-4 text-lg font-semibold shadow">
-        Group: {groupName.toUpperCase()} | User: {username}
+        Group: {groupName.toUpperCase()} | User: {name}
       </header>
 
       {/* Messages */}
@@ -99,11 +99,11 @@ const ChatPage = () => {
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={`flex ${msg.sender === username ? "justify-end" : "justify-start"}`}
+            className={`flex ${msg.sender === name ? "justify-end" : "justify-start"}`}
           >
             <div
               className={`max-w-sm px-4 py-2 rounded-lg shadow-md ${
-                msg.sender === username
+                msg.sender === name
                   ? "bg-green-500 text-white"
                   : "bg-white border text-gray-800"
               }`}

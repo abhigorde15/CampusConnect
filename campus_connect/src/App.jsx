@@ -11,6 +11,8 @@ import ChatGroupPage from './pages/ChatGroupPage'
 import ChatPage from './components/ChatPage'
 import AdminProfilePage from './pages/AdminProfilePage'
 import UserProfilePage from './pages/UserProfilePage'
+import MarketplacePage from './pages/MarketPlace'
+import EmailVerification from './components/EmailVerification'
 function App() {
   
 
@@ -27,6 +29,9 @@ function App() {
       <Route path='/chat/:groupName' element={<ChatPage />} />
          <Route path='/admin/profile' element={<AdminProfilePage/>} /> 
           <Route path='/user/profile' element={ <UserProfilePage />} /> 
+          <Route path='/marketplace' element={ <MarketplacePage />} /> 
+          <Route path="/verify" element={<EmailVerification />} />
+
       </Routes>
     
      <Footer />

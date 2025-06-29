@@ -45,7 +45,7 @@ public class ChatRestController {
     }
 
     @DeleteMapping("/groups/{id}")
-    public ResponseEntity<?> deleteGroup(@PathVariable long id) {
+    public ResponseEntity<?> deleteGroup(@PathVariable int id) {
         if (!groupRepo.existsById(id)) {
             return ResponseEntity.status(404).body("Group not found");
         }
