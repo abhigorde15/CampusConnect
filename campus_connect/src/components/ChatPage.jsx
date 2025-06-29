@@ -1,48 +1,97 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MdSend } from "react-icons/md";
+import { useParams } from "react-router-dom";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+import axios from "axios";
 
 const ChatPage = () => {
+  const { groupName } = useParams();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const chatRef = useRef(null);
+  const stompClientRef = useRef(null);
 
   const username = localStorage.getItem("username") || "You";
-  const roomId = localStorage.getItem("roomId") || "DemoRoom";
 
+  // Scroll to bottom when new messages appear
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
+  // Connect WebSocket and load old messages
+  useEffect(() => {
+    // Load message history
+    axios
+      .get(`http://localhost:8080/api/chat/messages/${groupName}`)
+      .then((res) => {
+        const history = res.data.map((msg) => ({
+          sender: msg.senderName,
+          content: msg.content,
+          time: new Date(msg.timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        }));
+        setMessages(history);
+      })
+      .catch((err) => console.error("Error loading messages:", err));
 
-    const newMessage = {
-      sender: username,
+    // WebSocket connection
+    const socket = new SockJS("http://localhost:8080/ws");
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      onConnect: () => {
+        stompClient.subscribe(`/topic/${groupName}`, (message) => {
+          
+          const body = JSON.parse(message.body);
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: body.senderName,
+              content: body.content,
+              time: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            },
+          ]);
+        });
+      },
+    });
+
+    stompClient.activate();
+    stompClientRef.current = stompClient;
+
+    return () => {
+      stompClient.deactivate();
+    };
+  }, [groupName]);
+
+  const sendMessage = () => {
+    if (!input.trim() || !stompClientRef.current?.connected) return;
+
+    const payload = {
+      senderName: username,
       content: input.trim(),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
-    setInput("");
+    stompClientRef.current.publish({
+      destination: `/app/chat.sendMessage/${groupName}`,
+      body: JSON.stringify(payload),
+    });
 
-    // Optional: simulate other user reply
-    setTimeout(() => {
-      const reply = {
-        sender: "Friend",
-        content: "Got it: " + newMessage.content,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, reply]);
-    }, 1000);
+    setInput("");
   };
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-blue-600 text-white px-6 py-4 text-lg font-semibold shadow">
-        Room: {roomId} | User: {username}
+        Group: {groupName.toUpperCase()} | User: {username}
       </header>
 
       {/* Messages */}
@@ -54,7 +103,9 @@ const ChatPage = () => {
           >
             <div
               className={`max-w-sm px-4 py-2 rounded-lg shadow-md ${
-                msg.sender === username ? "bg-green-500 text-white" : "bg-white border text-gray-800"
+                msg.sender === username
+                  ? "bg-green-500 text-white"
+                  : "bg-white border text-gray-800"
               }`}
             >
               <div className="text-sm font-semibold mb-1">{msg.sender}</div>

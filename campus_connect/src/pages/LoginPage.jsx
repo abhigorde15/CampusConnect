@@ -21,7 +21,7 @@ const LoginPage = () => {
 
     try {
       const token = await loginUser(user);
-      localStorage.setItem("token", token); // optionally store JWT
+      localStorage.setItem("token", token); 
       toast.success("Login successful");
       setTimeout(() => navigate("/"), 1000); // redirect after login
     } catch (err) {

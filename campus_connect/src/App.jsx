@@ -24,7 +24,7 @@ function App() {
         <Route path='/signup' element={ <SignUpPage />} />
         <Route path='/chat_groups' element={ <ChatGroupPage/>} />
         {/* <Route path='/chat/cse' element={ <JoinCreateChat/>} /> */}
-         <Route path='/chat/cse' element={ <ChatPage/>} /> 
+      <Route path='/chat/:groupName' element={<ChatPage />} />
          <Route path='/admin/profile' element={<AdminProfilePage/>} /> 
           <Route path='/user/profile' element={ <UserProfilePage />} /> 
       </Routes>
