@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/notes")
+@RequestMapping("/api")
 public class NotesController {
 
     @Autowired
@@ -29,12 +29,12 @@ public class NotesController {
     @Autowired
     private JwtUtil jwtUtil;
   
-    @GetMapping
+    @GetMapping("/auth/notes")
     public List<Note> getAllNotes() {
         return noteService.getAllNotes();
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/notes/upload")
     public Note uploadNote(
             @RequestParam("title") String title,
             @RequestParam("branch") String branch,
@@ -81,7 +81,7 @@ public class NotesController {
     }
 
     // 🔹 Get notes by a specific user
-    @GetMapping("/user/{userId}")
+    @GetMapping("/notes/user/{userId}")
     public List<Note> getNotesByUser(@PathVariable int userId) {
         User user = userRepository.findById(userId).orElseThrow();
         return noteService.getNotesByUser(user);

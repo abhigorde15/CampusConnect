@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
+import MarketItemCard from "./MarketItemCard"; 
 
 const MarketplacePage = () => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState([{
+    title: "Abhishek",
+    price: "100",
+    condition: "Good",
+    category: "Electronics",
+    phone: "0099999",
+    address: "Balanagar",
+    availability: "Available",
+    image: "/shopping.webp",
+  }]);
   const [category, setCategory] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -20,23 +30,23 @@ const MarketplacePage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  useEffect(() => {
-    fetchItems();
-  }, []);
+  // useEffect(() => {
+  //   fetchItems();
+  // }, []);
 
-  const fetchItems = async () => {
-    try {
-      const res = await axios.get("http://localhost:8080/api/market");
-      if (Array.isArray(res.data)) {
-  setItems(res.data);
-} else {
-  console.error("Expected array, got:", res.data);
-  setItems([]); // Prevent crash
-}
-    } catch (err) {
-      toast.error("Failed to fetch items");
-    }
-  };
+//   const fetchItems = async () => {
+//     try {
+//       const res = await axios.get("http://localhost:8080/api/auth/items");
+//       if (Array.isArray(res.data)) {
+//   setItems(res.data);
+// } else {
+//   console.error("Expected array, got:", res.data);
+//   setItems([]); // Prevent crash
+// }
+//     } catch (err) {
+//       toast.error("Failed to fetch items");
+//     }
+//   };
 
   const filteredItems = items.filter(
     (item) =>
@@ -59,7 +69,7 @@ const MarketplacePage = () => {
       for (const key in formData) {
         data.append(key, formData[key]);
       }
-      await axios.post("/api/market", data, {
+      await axios.post("http://localhost:8080/api/item", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -81,6 +91,46 @@ const MarketplacePage = () => {
       toast.error("Delete failed");
     }
   };
+const handleRazorpay = async (amount) => {
+  try {
+    const res = await axios.post("http://localhost:8080/api/payment/create-order", {
+      amount: amount * 100, 
+    });
+
+    const { id: order_id, currency } = res.data;
+
+    const options = {
+      key: "YOUR_PUBLIC_KEY_HERE", 
+      amount: amount * 100,
+      currency,
+      name: "CampusConnect",
+      description: "Marketplace Item Purchase",
+      order_id,
+      handler: function (response) {
+        toast.success("Payment Successful!");
+        console.log("Razorpay payment ID:", response.razorpay_payment_id);
+        console.log("Order ID:", response.razorpay_order_id);
+        console.log("Signature:", response.razorpay_signature);
+
+        // Optional: call backend to save transaction details
+      },
+      prefill: {
+        name: "Abhishek Gorde",
+        email: "abhishek@example.com",
+        contact: "9999999999",
+      },
+      theme: {
+        color: "#3b82f6",
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    toast.error("Failed to initiate Razorpay payment.");
+    console.error(err);
+  }
+};
 
   return (
     <div className="min-h-screen bg-blue-50 px-4 py-8 font-sans">
@@ -120,25 +170,16 @@ const MarketplacePage = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {filteredItems.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white p-4 rounded shadow cursor-pointer hover:shadow-md transition"
-            onClick={() => {
-              setSelectedItem(item);
-              setShowDetailModal(true);
-            }}
-          >
-            <img src={item.image} alt={item.title} className="w-full h-40 object-cover rounded" />
-            <h3 className="font-semibold text-lg mt-2 text-gray-800">{item.title}</h3>
-            <p className="text-blue-600 font-bold">₹{item.price}</p>
-            <p className="text-sm text-gray-600">By: {item.seller}</p>
-            <p className="text-xs text-gray-500 mb-2">Posted: {item.date}</p>
-            <span className="inline-block px-2 py-1 text-xs bg-gray-200 rounded-full">
-              {item.condition}
-            </span>
-          </div>
-        ))}
+       {filteredItems.map((item) => (
+  <MarketItemCard
+    key={item.id}
+    item={item}
+    onClick={() => {
+      setSelectedItem(item);
+      setShowDetailModal(true);
+    }}
+  />
+))}
       </div>
 
       {showModal && (
@@ -188,8 +229,34 @@ const MarketplacePage = () => {
             <p><strong>Availability:</strong> {selectedItem.availability}</p>
             <p className="text-sm text-gray-500">Posted on {selectedItem.date}</p>
             <div className="flex justify-between mt-4">
-              <button onClick={() => setShowDetailModal(false)} className="px-4 py-2 bg-gray-300 rounded">Close</button>
-              <button onClick={() => handleDelete(selectedItem.id)} className="px-4 py-2 bg-red-500 text-white rounded">Delete</button>
+              <div className="flex justify-between mt-4">
+  <button
+    onClick={() => setShowDetailModal(false)}
+    className="px-4 py-2 bg-gray-300 rounded"
+  >
+    Close
+  </button>
+
+  <div className="flex gap-2">
+    <button
+      onClick={() => {
+        toast.success("Cash payment selected.Meet the seller at given adress .");
+      //  setShowDetailModal(false);
+      }}
+      className="px-4 py-2 bg-yellow-500 text-white rounded"
+    >
+      Pay in Cash
+    </button>
+
+    <button
+      onClick={() => handleRazorpay(selectedItem.price)}
+      className="px-4 py-2 bg-green-600 text-white rounded"
+    >
+      Pay via Razorpay
+    </button>
+  </div>
+</div>
+
             </div>
           </div>
         </div>

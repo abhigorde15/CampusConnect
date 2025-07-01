@@ -1,14 +1,17 @@
 package com.campus_connect.CampusConnect_Backend.controllers;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -110,6 +113,32 @@ public class AuthController {
         final String token = jwtUtil.generateToken(userDetails.getUsername(), user.getName());
 
         return ResponseEntity.ok(token);
+    }
+    @GetMapping("/user")
+    public ResponseEntity<?> getUser(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid Authorization header");
+        }
+
+        String jwt = authHeader.substring(7); // Remove "Bearer " prefix
+
+        try {
+            String username = jwtUtil.extractUsername(jwt); // Validate and extract username
+
+            if (username == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+            }
+
+            User user = userService.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            return ResponseEntity.ok(user);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token validation failed");
+        }
     }
 
 }

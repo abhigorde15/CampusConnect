@@ -15,7 +15,7 @@ const NotesPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/notes")
+    fetch("http://localhost:8080/api/auth/notes")
       .then((res) => res.json())
       .then((data) => setNotes(data))
       .catch(() => toast.error("Failed to load notes"));

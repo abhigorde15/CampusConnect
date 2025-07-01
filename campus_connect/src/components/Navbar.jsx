@@ -37,7 +37,7 @@ const Navbar = () => {
           {isLoggedIn ? (
             <>
               <button
-                onClick={() => navigate("/profile")}
+                onClick={() => navigate("user/profile")}
                 className="bg-blue-600 text-white px-4 py-1 rounded mr-3 hover:bg-blue-700 transition hidden sm:inline"
               >
                 Profile
@@ -108,7 +108,7 @@ const Navbar = () => {
                 <button
                   onClick={() => {
                     setIsOpen(false);
-                    navigate("/profile");
+                    navigate("user/profile");
                   }}
                   className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
                 >
