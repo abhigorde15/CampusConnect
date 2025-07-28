@@ -1,79 +1,93 @@
-//package com.campus_connect.CampusConnect_Backend.controllers;
-//
-//import com.campus_connect.CampusConnect_Backend.models.MarketItem;
-//import com.campus_connect.CampusConnect_Backend.repository.MarketItemRepository;
-//import com.campus_connect.CampusConnect_Backend.service.CloudinaryService;
-//
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//import org.springframework.web.multipart.MultipartFile;
-//
-//import java.util.List;
-//import java.util.Optional;
-//
-//@RestController
-//@RequestMapping("/api")
-//@CrossOrigin(origins = "*")
-//public class MarketItemController {
-//
-//    @Autowired
-//    private MarketItemRepository marketRepository;
-//
-//    @Autowired
-//    private CloudinaryService cloudinaryService;
-//
-//    // Get all items
-//    @GetMapping("/auth/items")
-//    public ResponseEntity<?> getAllMarketItems() {
-//        List<MarketItem> allMarketItems = marketRepository.findAll();
-//        return ResponseEntity.ok(allMarketItems);
-//    }
-//
-//    // Create item
-//    @PostMapping("/item")
-//    public ResponseEntity<?> createMarketItem(
-//            @RequestParam("title") String title,
-//            @RequestParam("price") double price,
-//            @RequestParam("condition") String condition,
-//            @RequestParam("category") String category,
-//            @RequestParam("phone") String phone,
-//            @RequestParam("availability") String availability,
-//            @RequestParam("address") String address,
-//            @RequestParam("image") MultipartFile file
-//    ) {
-//        try {
-//            String imageUrl = cloudinaryService.uploadFile(file);
-//
-//            MarketItem item = new MarketItem();
-//            item.setTitle(title);
-//            item.setPrice(price);
-//            item.setCondition(condition);
-//            item.setCategory(category);
-//            item.setPhone(phone);
-//            item.setAvailability(availability);
-//            item.setAddress(address);
-//            item.setImageUrl(imageUrl);
-//
-//           
-//            MarketItem savedItem = marketRepository.save(item);
-//            return ResponseEntity.ok(savedItem);
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create item: " + e.getMessage());
-//        }
-//    }
-//
-//  
-//    @DeleteMapping("/market/{id}")
-//    public ResponseEntity<?> deleteMarketItem(@PathVariable Long id) {
-//        Optional<MarketItem> optionalItem = marketRepository.findById(id);
-//        if (optionalItem.isPresent()) {
-//            marketRepository.deleteById(id);
-//            return ResponseEntity.ok("Item deleted successfully.");
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Item not found.");
-//        }
-//    }
-//}
+package com.campus_connect.CampusConnect_Backend.controllers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.campus_connect.CampusConnect_Backend.config.JwtUtil;
+import com.campus_connect.CampusConnect_Backend.models.MarketItem;
+import com.campus_connect.CampusConnect_Backend.models.User;
+import com.campus_connect.CampusConnect_Backend.repository.MarketItemRepository;
+import com.campus_connect.CampusConnect_Backend.repository.UserRepository;
+import com.campus_connect.CampusConnect_Backend.service.CloudinaryService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/")
+@CrossOrigin(origins = "*")
+public class MarketItemController {
+
+    @Autowired
+    private MarketItemRepository itemRepo;
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private UserRepository userRepo;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
+    
+    @PostMapping("item")
+    public ResponseEntity<MarketItem> createItem(
+            @RequestParam String title,
+            @RequestParam String price,
+            @RequestParam String condition_item,
+            @RequestParam String category,
+            @RequestParam String phone,
+            @RequestParam String address,
+            @RequestParam String availability,
+            @RequestParam MultipartFile image,
+            HttpServletRequest request
+    ) throws IOException {
+    	String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Missing or invalid Authorization header");
+        }
+
+        String token = authHeader.substring(7);
+        String email = jwtUtil.extractUsername(token);
+
+        User user = userRepo.findByEmail(email).orElseThrow();
+        System.out.println("User.........."+user);
+        String imageUrl =  "https://res.cloudinary.com/dguygzrkp/image/upload/v1751135815/notes/yxumfpbtkjmmflga2g3z.png" ;// cloudinaryService.uploadFile(image);
+
+        MarketItem item = new MarketItem(
+        	    title,
+        	    price,
+        	    condition_item,
+        	    category,
+        	    phone,
+        	    address,
+        	    availability,
+        	    imageUrl,
+        	    LocalDate.now(),         
+        	    user                     
+        	);
+
+        return ResponseEntity.ok(itemRepo.save(item));
+    }
+
+   
+    @GetMapping("public/market/items")
+    public ResponseEntity<List<MarketItem>> getAllItems() {
+        return ResponseEntity.ok(itemRepo.findAll());
+    }
+
+    @GetMapping("public/market/items/user/{userId}")
+    public ResponseEntity<List<MarketItem>> getItemsByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(itemRepo.findByUploadedById(userId));
+    }
+
+    
+    @DeleteMapping("market/items/{id}")
+    public ResponseEntity<String> deleteItem(@PathVariable int id) {
+        itemRepo.deleteById(id);
+        return ResponseEntity.ok("Item deleted successfully");
+    }
+}

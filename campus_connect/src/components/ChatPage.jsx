@@ -25,9 +25,10 @@ const ChatPage = () => {
   useEffect(() => {
     // Load message history
     axios
-      .get(`http://localhost:8080/api/chat/messages/${groupName}`)
+      .get(`http://localhost:8080/api/public/chat/messages/${groupName}`)
       .then((res) => {
         const history = res.data.map((msg) => ({
+          id: msg.id,
           sender: msg.senderName,
           content: msg.content,
           time: new Date(msg.timestamp).toLocaleTimeString([], {
@@ -86,6 +87,26 @@ const ChatPage = () => {
 
     setInput("");
   };
+const handleDelete = async (id) => {
+  const token = localStorage.getItem("token"); // Your JWT token
+  if (!token) {
+    alert("You're not logged in.");
+    return;
+  }
+
+  try {
+    await axios.delete(`http://localhost:8080/api/message/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setMessages((prev) => prev.filter((msg) => msg.id !== id));
+  } catch (err) {
+    alert("Failed to delete message.");
+    console.error(err);
+  }
+};
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -100,6 +121,15 @@ const ChatPage = () => {
           <div
             key={i}
             className={`flex ${msg.sender === name ? "justify-end" : "justify-start"}`}
+            onClick={()=>{
+                if(msg.sender === name){
+                const confirmDelete = window.confirm("Do you want delete this message")
+                if(confirmDelete){
+                  handleDelete(msg.id)
+                }
+              }
+            }
+             }
           >
             <div
               className={`max-w-sm px-4 py-2 rounded-lg shadow-md ${

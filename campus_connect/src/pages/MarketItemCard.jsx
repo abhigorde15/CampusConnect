@@ -1,5 +1,3 @@
-// src/components/MarketItemCard.jsx
-import React from "react";
 
 const MarketItemCard = ({ item, onClick }) => {
   return (

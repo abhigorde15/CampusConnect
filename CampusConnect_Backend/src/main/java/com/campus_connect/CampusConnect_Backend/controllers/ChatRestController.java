@@ -1,5 +1,6 @@
 package com.campus_connect.CampusConnect_Backend.controllers;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +13,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.campus_connect.CampusConnect_Backend.config.JwtUtil;
 import com.campus_connect.CampusConnect_Backend.models.ChatGroup;
 import com.campus_connect.CampusConnect_Backend.models.ChatMessage;
+import com.campus_connect.CampusConnect_Backend.models.User;
 import com.campus_connect.CampusConnect_Backend.repository.ChatGroupRepository;
 import com.campus_connect.CampusConnect_Backend.repository.ChatMessageRepository;
+import com.campus_connect.CampusConnect_Backend.repository.MarketItemRepository;
+import com.campus_connect.CampusConnect_Backend.repository.UserRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/api/chat")
+@RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class ChatRestController {
 
@@ -27,15 +35,18 @@ public class ChatRestController {
 
     @Autowired
     private ChatMessageRepository messageRepo;
-
    
-    @GetMapping("/groups")
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private UserRepository userRepository;
+    @GetMapping("/public/groups")
     public ResponseEntity<List<ChatGroup>> getAllGroups() {
         return ResponseEntity.ok(groupRepo.findAll());
     }
 
  
-    @PostMapping("/groups")
+    @PostMapping("/chat/groups")
     public ResponseEntity<?> createGroup(@RequestBody ChatGroup group) {
         try {
             return ResponseEntity.ok(groupRepo.save(group));
@@ -44,7 +55,7 @@ public class ChatRestController {
         }
     }
 
-    @DeleteMapping("/groups/{id}")
+    @DeleteMapping("/chat/groups/{id}")
     public ResponseEntity<?> deleteGroup(@PathVariable int id) {
         if (!groupRepo.existsById(id)) {
             return ResponseEntity.status(404).body("Group not found");
@@ -57,7 +68,7 @@ public class ChatRestController {
         }
     }
 
-    @GetMapping("/messages/{groupName}")
+    @GetMapping("/public/chat/messages/{groupName}")
     public ResponseEntity<?> getMessagesByGroup(@PathVariable String groupName) {
         try {
             List<ChatMessage> messages = messageRepo.findByChatGroupNameOrderByTimestampAsc(groupName);
@@ -66,4 +77,40 @@ public class ChatRestController {
             return ResponseEntity.status(500).body("Error fetching messages: " + e.getMessage());
         }
     }
+    @DeleteMapping("/message/{id}")
+    public ResponseEntity<?> deleteById(@PathVariable Long id, HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+                                 .body("Missing or invalid Authorization header");
+        }
+
+        String token = authHeader.substring(7);
+        String email = jwtUtil.extractUsername(token);
+
+        Optional<ChatMessage> optionalMsg = messageRepo.findById(id);
+        if (optionalMsg.isEmpty()) {
+            return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND)
+                                 .body("Message not found");
+        }
+
+        ChatMessage msg = optionalMsg.get();
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+                                 .body("User not found");
+        }
+
+        User user = optionalUser.get();
+
+        if (user.getName().equals(msg.getSenderName())) {
+            messageRepo.deleteById(id); // 🧹 Actual deletion here
+            return ResponseEntity.ok("Successfully Deleted");
+        }
+
+        return ResponseEntity.status(HttpServletResponse.SC_FORBIDDEN)
+                             .body("You are not allowed to delete this message");
+    }
+
 }

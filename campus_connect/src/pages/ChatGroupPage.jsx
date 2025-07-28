@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Users, Cpu, Settings, CircuitBoard } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import { toast, Toaster } from 'react-hot-toast';
 const iconMap = {
   CSE: <Cpu className="w-6 h-6 text-blue-600" />,
   IT: <CircuitBoard className="w-6 h-6 text-purple-600" />,
@@ -11,7 +11,7 @@ const iconMap = {
   CIVIL: <Users className="w-6 h-6 text-green-600" />,
   EE: <Users className="w-6 h-6 text-pink-600" />,
 };
-
+const token = localStorage.getItem('token')
 const emojiMap = {
   CSE: '💻',
   IT: '🖥️',
@@ -26,8 +26,11 @@ function ChatGroupPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
 useEffect(() => {
-  axios
-    .get('http://localhost:8080/api/chat/groups')
+  console.log(token)
+  if(token){
+   axios
+  .get('http://localhost:8080/api/public/groups')
+
     .then((res) => {
       if (Array.isArray(res.data)) {
         setGroups(res.data);
@@ -40,6 +43,11 @@ useEffect(() => {
       console.error('Failed to fetch chat groups:', err);
       setGroups([]);
     });
+  }
+  else{
+    toast.error("You Are Not Logged in So can't Access this fearture")
+  }
+ 
 }, []);
 
 
@@ -52,7 +60,10 @@ useEffect(() => {
 
 
   return (
+   
     <div className="p-6 min-h-screen bg-gradient-to-b from-white to-blue-50">
+      <Toaster position="top-right" reverseOrder={false}/>
+
       <h1 className="text-3xl font-bold text-center mb-8">💬 Branch-wise Chat Groups</h1>
 
       <div className="max-w-md mx-auto mb-6">

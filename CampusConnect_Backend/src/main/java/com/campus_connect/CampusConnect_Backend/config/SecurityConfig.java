@@ -1,6 +1,9 @@
 package com.campus_connect.CampusConnect_Backend.config;
 
 import com.campus_connect.CampusConnect_Backend.service.CustomUserDetailsService;
+
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +20,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -37,10 +44,9 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-            	    .requestMatchers("/api/chat/groups").permitAll()
-            	    .requestMatchers("/ws/**").permitAll()// only GET /groups public
+            	    .requestMatchers("/ws/**").permitAll()
             	    .requestMatchers("/api/auth/**").permitAll()
-            	    .requestMatchers("/api/**").permitAll()     // your login/register routes if needed
+            	    .requestMatchers("/api/**").permitAll()     
             	    .anyRequest().authenticated()
             	)
             .userDetailsService(customUserDetailsService).exceptionHandling(e->e.accessDeniedHandler(accessDeniedHandler))
@@ -60,6 +66,8 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
+ 
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

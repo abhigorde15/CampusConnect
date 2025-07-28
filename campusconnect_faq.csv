@@ -1,0 +1,18 @@
+question,answer
+How do I register on CampusConnect?,"Click on the ""Register"" button, fill in your name, email, password, and verify your email before logging in."
+I didn’t get the verification email. What should I do?,"Please check your spam folder. If it’s not there, try registering again or contact the admin."
+How can I log in to CampusConnect?,"After verifying your email, click on ""Login"" and enter your email and password."
+How do I upload notes?,"Go to the Notes section, click ""Upload Notes"", fill in the details like title, branch, semester, and upload the file."
+Who can view the uploaded notes?,All registered users can browse and download notes uploaded by others.
+How do I join a chat group?,"From the Chat Groups section, select a group like your branch and click ""Join Chat"". You’ll be redirected to a real-time chat room."
+Can I create my own chat group?,Only admins can create or delete chat groups. You can request your admin to add a new one.
+How do I list a product for sale in the marketplace?,"Go to Marketplace → Post Item, fill in the item details, upload an image, and submit."
+How do I contact a seller in the marketplace?,Click on a listed item and use the phone number or contact details shown on the item card.
+What categories of products are allowed in the marketplace?,"You can list books, electronics, stationary, and other second-hand academic-related items."
+Can I delete my posted item?,"Yes, go to ""My Listings"" and click on the delete icon for the item you want to remove."
+How does the payment work?,Payments are done via UPI/Razorpay integration. Admin ensures seller receives their share once the deal is finalized.
+Is email verification required for login?,"Yes, only verified users are allowed to log in for security purposes."
+Can I edit my profile information?,"Profile editing is coming soon! For now, contact support for changes."
+How do I report inappropriate content?,"Please contact admin directly using the ""Contact"" section or in chat."
+Is CampusConnect available as a mobile app?,Currently it’s a web app optimized for mobile browsers. A dedicated app may come in future.
+How do I log out?,"Click on your profile icon and select ""Logout"" from the dropdown."

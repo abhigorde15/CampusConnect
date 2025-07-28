@@ -1,14 +1,10 @@
-//package com.campus_connect.CampusConnect_Backend.repository;
-//
-//import java.util.List;
-//import java.util.Optional;
-//
-//import org.springframework.data.jpa.repository.JpaRepository;
-//
-//import com.campus_connect.CampusConnect_Backend.models.MarketItem;
-//
-//public interface MarketItemRepository extends JpaRepository<MarketItem, Long> {
-//    List<MarketItem> findByCategoryIgnoreCase(String category);
-//    List<MarketItem> findByUserId(long userId);
-//	
-//}
+package com.campus_connect.CampusConnect_Backend.repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.campus_connect.CampusConnect_Backend.models.MarketItem;
+
+import java.util.List;
+
+public interface MarketItemRepository extends JpaRepository<MarketItem, Integer> {
+    List<MarketItem> findByUploadedById(Long userId);
+}
