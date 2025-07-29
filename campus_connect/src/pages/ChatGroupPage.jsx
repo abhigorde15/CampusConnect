@@ -29,7 +29,7 @@ useEffect(() => {
   console.log(token)
   if(token){
    axios
-  .get('http://localhost:8080/api/public/groups')
+  .get('https://kkwaghconnect.onrender.com/api/public/groups')
 
     .then((res) => {
       if (Array.isArray(res.data)) {

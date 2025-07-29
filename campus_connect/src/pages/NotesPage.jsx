@@ -15,7 +15,7 @@ const NotesPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/auth/notes")
+    fetch("https://kkwaghconnect.onrender.com/api/auth/notes")
       .then((res) => res.json())
       .then((data) => setNotes(data))
       .catch(() => toast.error("Failed to load notes"));
@@ -50,7 +50,7 @@ const NotesPage = () => {
     formData.append("semester", noteForm.semester);
 
     try {
-      const res = await fetch("http://localhost:8080/api/notes/upload", {
+      const res = await fetch("https://kkwaghconnect.onrender.com/api/notes/upload", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

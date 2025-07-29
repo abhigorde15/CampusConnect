@@ -28,7 +28,7 @@ const MarketplacePage = () => {
  const token = localStorage.getItem('token')
   const fetchItems = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/public/market/items");
+      const res = await axios.get("https://kkwaghconnect.onrender.com/api/public/market/items");
       setItems(res.data); 
     } catch (err) {
       toast.error("Failed to fetch items");
@@ -57,7 +57,7 @@ const MarketplacePage = () => {
         data.append(key, formData[key]);
       }
 
-      const res = await axios.post("http://localhost:8080/api/item", data, {
+      const res = await axios.post("https://kkwaghconnect.onrender.com/api/item", data, {
   headers: {
     "Content-Type": "multipart/form-data",
     Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ const MarketplacePage = () => {
 
   const handleRazorpay = async (amount) => {
     try {
-      const res = await axios.post("http://localhost:8080/api/payment/create-order", {
+      const res = await axios.post("https://kkwaghconnect.onrender.com/api/payment/create-order", {
         amount: amount * 100,
       });
 

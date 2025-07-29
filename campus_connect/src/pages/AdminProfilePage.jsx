@@ -9,11 +9,13 @@ const AdminProfilePage = () => {
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   const [newGroup, setNewGroup] = useState({ title: '', description: '' });
 
+
+
   
 useEffect(() => {
   const token = localStorage.getItem('token');
 
-  fetch('http://localhost:8080/api/chat-groups', {
+  fetch('https://kkwaghconnect.onrender.com/api/chat-groups', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -25,7 +27,7 @@ useEffect(() => {
 useEffect(() => {
   const token = localStorage.getItem('token');
 
-  fetch('http://localhost:8080/api/chat-groups', {
+  fetch('https://kkwaghconnect.onrender.com/api/chat-groups', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -40,7 +42,7 @@ const handleAddGroup = async () => {
 
   try {
     const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:8080/api/chat-groups', {
+    const res = await fetch('https://kkwaghconnect.onrender.com/api/chat-groups', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,7 +66,7 @@ const handleDeleteGroup = async (id) => {
   const token = localStorage.getItem('token');
 
   try {
-    await fetch(`http://localhost:8080/api/chat-groups/${id}`, {
+    await fetch(`https://kkwaghconnect.onrender.com/api/chat-groups/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
