@@ -31,7 +31,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "https://campus-connect-amber-nine.vercel.app/")
 public class AuthController {
     @Autowired
     private EmailService emailService;
@@ -57,19 +57,20 @@ public class AuthController {
 
         // Save user with isVerified = false
         User registeredUser = userService.registerUser(user);  // still unverified
-
+        System.out.println("before Generate verification token");
         // Generate verification token
         String token = UUID.randomUUID().toString();
         userService.saveVerificationToken(registeredUser, token);
-
+       
        
         String verificationUrl = request.getRequestURL().toString().replace("/register", "")
                 + "/verify?token=" + token;
 
-
+        
 
         emailService.sendEmail(user.getEmail(), user.getName(),token);
-
+        
+       
         return ResponseEntity.ok("Registration successful. Please verify your email.");
     }
   

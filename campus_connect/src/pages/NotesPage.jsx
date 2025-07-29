@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-
+import { httpClient } from "../config/AxiosHelper"; 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
   const [branch, setBranch] = useState('');
@@ -15,9 +15,8 @@ const NotesPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("https://kkwaghconnect.onrender.com/api/auth/notes")
-      .then((res) => res.json())
-      .then((data) => setNotes(data))
+    httpClient.get('api/auth/notes') 
+      .then(res => setNotes(res.data))
       .catch(() => toast.error("Failed to load notes"));
   }, []);
 
@@ -50,16 +49,12 @@ const NotesPage = () => {
     formData.append("semester", noteForm.semester);
 
     try {
-      const res = await fetch("https://kkwaghconnect.onrender.com/api/notes/upload", {
-        method: "POST",
+      const res = await httpClient.post('api/notes/upload', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-        },
-        body: formData,
+        }
       });
-
-      if (!res.ok) throw new Error("Upload failed");
-      const newNote = await res.json();
+      const newNote = res.data;
       setNotes([newNote, ...notes]);
       toast.success("Note uploaded successfully!");
       setShowModal(false);

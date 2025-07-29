@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
-
+import { httpClient } from "../config/AxiosHelper";
 const EmailVerification = () => {
   const [token, setToken] = useState('');
   const navigate = useNavigate();
@@ -11,8 +10,8 @@ const EmailVerification = () => {
     e.preventDefault();
 
     if (token.trim()) {
-      axios
-        .get(`http://localhost:8080/api/auth/verify?token=${token}`)
+      httpClient
+        .get(`api/auth/verify?token=${token}`)
         .then(res => {
           toast.success(res.data);
           navigate("/auth");

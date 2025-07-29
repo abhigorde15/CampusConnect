@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "https://campus-connect-amber-nine.vercel.app/")
 public class MarketItemController {
 
     @Autowired

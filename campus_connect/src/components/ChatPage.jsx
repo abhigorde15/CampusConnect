@@ -3,8 +3,8 @@ import { MdSend } from "react-icons/md";
 import { useParams } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
-import axios from "axios";
 
+import { httpClient } from "../config/AxiosHelper";
 const ChatPage = () => {
   const { groupName } = useParams();
   const [messages, setMessages] = useState([]);
@@ -24,8 +24,8 @@ const ChatPage = () => {
   // Connect WebSocket and load old messages
   useEffect(() => {
     // Load message history
-    axios
-      .get(`http://localhost:8080/api/public/chat/messages/${groupName}`)
+    httpClient
+      .get(`api/public/chat/messages/${groupName}`)
       .then((res) => {
         const history = res.data.map((msg) => ({
           id: msg.id,
@@ -41,7 +41,7 @@ const ChatPage = () => {
       .catch((err) => console.error("Error loading messages:", err));
 
     // WebSocket connection
-    const socket = new SockJS("http://localhost:8080/ws");
+    const socket = new SockJS("https://kkwaghconnect.onrender.com/ws");
     const stompClient = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
@@ -88,14 +88,14 @@ const ChatPage = () => {
     setInput("");
   };
 const handleDelete = async (id) => {
-  const token = localStorage.getItem("token"); // Your JWT token
+  const token = localStorage.getItem("token"); 
   if (!token) {
     alert("You're not logged in.");
     return;
   }
 
   try {
-    await axios.delete(`http://localhost:8080/api/message/${id}`, {
+    await httpClient.delete(`api/message/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

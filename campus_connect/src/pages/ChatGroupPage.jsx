@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { httpClient } from "../config/AxiosHelper";
 import { Users, Cpu, Settings, CircuitBoard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
@@ -26,10 +26,10 @@ function ChatGroupPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
 useEffect(() => {
-  console.log(token)
+
   if(token){
-   axios
-  .get('https://kkwaghconnect.onrender.com/api/public/groups')
+   httpClient
+  .get('api/public/groups')
 
     .then((res) => {
       if (Array.isArray(res.data)) {

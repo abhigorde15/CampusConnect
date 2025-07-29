@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
-import axios from "axios";
+import { httpClient } from "../config/AxiosHelper";
 import MarketItemCard from "./MarketItemCard";
 
 const MarketplacePage = () => {
@@ -28,7 +28,7 @@ const MarketplacePage = () => {
  const token = localStorage.getItem('token')
   const fetchItems = async () => {
     try {
-      const res = await axios.get("https://kkwaghconnect.onrender.com/api/public/market/items");
+      const res = await httpClient.get("api/public/market/items");
       setItems(res.data); 
     } catch (err) {
       toast.error("Failed to fetch items");
@@ -57,7 +57,7 @@ const MarketplacePage = () => {
         data.append(key, formData[key]);
       }
 
-      const res = await axios.post("https://kkwaghconnect.onrender.com/api/item", data, {
+      const res = await httpClient.post("api/item", data, {
   headers: {
     "Content-Type": "multipart/form-data",
     Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ const MarketplacePage = () => {
 
   const handleRazorpay = async (amount) => {
     try {
-      const res = await axios.post("https://kkwaghconnect.onrender.com/api/payment/create-order", {
+      const res = await httpClient.post("api/payment/create-order", {
         amount: amount * 100,
       });
 

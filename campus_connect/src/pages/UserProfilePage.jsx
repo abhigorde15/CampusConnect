@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { httpClient } from "../config/AxiosHelper";
 
 const UserProfilePage = () => {
   const [user, setUser] = useState({});
@@ -18,12 +18,12 @@ const UserProfilePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userRes = await axios.get('https://kkwaghconnect.onrender.com/api/auth/user', {
+        const userRes = await httpClient.get('api/auth/user', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(userRes.data);
 
-        const notesRes = await axios.get(`https://kkwaghconnect.onrender.com/api/notes/user/${userRes.data.id}`);
+        const notesRes = await httpClient.get(`api/notes/user/${userRes.data.id}`);
         setNotes(notesRes.data);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -35,7 +35,7 @@ const UserProfilePage = () => {
 
   const handleDeleteNote = async (id) => {
     try {
-      await axios.delete(`https://kkwaghconnect.onrender.com/api/notes/${id}`);
+      await httpClient.delete(`api/notes/${id}`);
       setNotes(prev => prev.filter(note => note.id !== id));
     } catch (err) {
       console.error('Failed to delete note:', err);

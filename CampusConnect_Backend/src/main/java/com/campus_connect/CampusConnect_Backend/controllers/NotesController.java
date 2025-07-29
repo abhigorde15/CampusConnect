@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "https://campus-connect-amber-nine.vercel.app/")
 @RequestMapping("/api")
 public class NotesController {
 

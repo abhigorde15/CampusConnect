@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import { httpClient } from "../config/AxiosHelper";
 const AdminProfilePage = () => {
   const [admin, setAdmin] = useState({});
   const [users, setUsers] = useState([]);
@@ -9,32 +9,27 @@ const AdminProfilePage = () => {
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   const [newGroup, setNewGroup] = useState({ title: '', description: '' });
 
-
+let token = localStorage.getItem('token');
 
   
 useEffect(() => {
-  const token = localStorage.getItem('token');
-
-  fetch('https://kkwaghconnect.onrender.com/api/chat-groups', {
+  token = localStorage.getItem('token');
+  httpClient.get('api/chat-groups',{
     headers: {
       Authorization: `Bearer ${token}`,
     },
   })
     .then((res) => res.json())
     .then((data) => setChatGroups(data))
-    .catch((err) => console.error('Failed to load chat groups'));
+    .catch(() => console.error('Failed to load chat groups'));
 }, []);
 useEffect(() => {
-  const token = localStorage.getItem('token');
-
-  fetch('https://kkwaghconnect.onrender.com/api/chat-groups', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => setChatGroups(data))
-    .catch((err) => console.error('Failed to load chat groups'));
+  token = localStorage.getItem('token');
+ httpClient.get('/chat-groups', {
+  headers: { Authorization: `Bearer ${token}` }
+})
+.then((res) => setChatGroups(res.data)) 
+.catch((err) => console.error('Failed to load chat groups'));
 }, []);
 
 const handleAddGroup = async () => {
@@ -42,18 +37,17 @@ const handleAddGroup = async () => {
 
   try {
     const token = localStorage.getItem('token');
-    const res = await fetch('https://kkwaghconnect.onrender.com/api/chat-groups', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(newGroup),
-    });
+    const res = await httpClient.post('/chat-groups', newGroup, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
 
-    if (!res.ok) throw new Error('Failed to create group');
-    const created = await res.json();
 
+
+    if (!res.data ) throw new Error('Failed to create group');
+   
+    const created = res.data;
     setChatGroups([...chatGroups, created]);
     setNewGroup({ title: '', description: '' });
     setShowAddGroupForm(false);
@@ -66,12 +60,13 @@ const handleDeleteGroup = async (id) => {
   const token = localStorage.getItem('token');
 
   try {
-    await fetch(`https://kkwaghconnect.onrender.com/api/chat-groups/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+
+    await httpClient.delete(`/chat-groups/${id}`, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
+
     setChatGroups(chatGroups.filter((group) => group.id !== id));
   } catch (err) {
     alert('Failed to delete group');

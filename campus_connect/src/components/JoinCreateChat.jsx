@@ -58,7 +58,6 @@ const JoinCreateChat = () => {
       // call api to create room on backend
       try {
         const response = await createRoomApi(detail.roomId);
-        console.log(response);
         toast.success("Room Created Successfully !!");
         //join the room
         setCurrentUser(detail.userName);
