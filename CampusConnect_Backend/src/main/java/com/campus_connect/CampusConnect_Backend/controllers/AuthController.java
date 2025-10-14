@@ -57,20 +57,20 @@ public class AuthController {
 
         // Save user with isVerified = false
         User registeredUser = userService.registerUser(user);  // still unverified
-        System.out.println("before Generate verification token");
+//        System.out.println("before Generate verification token");
         // Generate verification token
-        String token = UUID.randomUUID().toString();
-        userService.saveVerificationToken(registeredUser, token);
-       
-       
-        String verificationUrl = request.getRequestURL().toString().replace("/register", "")
-                + "/verify?token=" + token;
-
-        
-
-        emailService.sendEmail(user.getEmail(), user.getName(),token);
-        
-       
+//        String token = UUID.randomUUID().toString();
+//        userService.saveVerificationToken(registeredUser, token);
+//       
+//       
+//        String verificationUrl = request.getRequestURL().toString().replace("/register", "")
+//                + "/verify?token=" + token;
+//
+//        
+//
+//        emailService.sendEmail(user.getEmail(), user.getName(),token);
+//        
+//       
         return ResponseEntity.ok("Registration successful. Please verify your email.");
     }
   
@@ -123,7 +123,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid Authorization header");
         }
 
-        String jwt = authHeader.substring(7); // Remove "Bearer " prefix
+        String jwt = authHeader.substring(7); 
 
         try {
             String username = jwtUtil.extractUsername(jwt); // Validate and extract username

@@ -27,7 +27,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
     private String year;
-    private boolean isVerified = false;
+    private boolean isVerified = true;
     private String branch;
    
     private String verificationCode;
