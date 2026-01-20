@@ -1,10 +1,14 @@
 package com.campus_connect.CampusConnect_Backend.controllers;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +35,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "https://campus-connect-amber-nine.vercel.app/")
 public class AuthController {
     @Autowired
     private EmailService emailService;
@@ -87,14 +90,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        // 1. Check if user exists
+       
+    	
         Optional<User> optionalUser = repository.findByEmail(request.getEmail());
         if (optionalUser.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid email or password");
         }
-
+        
         User user = optionalUser.get();
-
+     
         // 2. Check if user is verified
         if (!user.isVerified()) {
             return ResponseEntity.badRequest().body("Please verify your email before logging in.");
@@ -112,8 +116,12 @@ public class AuthController {
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         final String token = jwtUtil.generateToken(userDetails.getUsername(), user.getName());
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("userId", user.getId()); 
 
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(response);
+
     }
     @GetMapping("/user")
     public ResponseEntity<?> getUser(HttpServletRequest request) {

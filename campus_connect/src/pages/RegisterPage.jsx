@@ -31,7 +31,7 @@ const SignUpPage = () => {
     try {
       await registerUser(user);
       toast.success("Registered successfully Verify Email");
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate("/auth"), 1500);
     } catch (err) {
       toast.error(err.response?.data || "Registration failed");
     }

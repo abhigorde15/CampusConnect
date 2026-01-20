@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/")
-@CrossOrigin(origins = "https://campus-connect-amber-nine.vercel.app/")
+@CrossOrigin(origins = "http://localhost:5173/")
 public class MarketItemController {
 
     @Autowired
@@ -79,7 +79,7 @@ public class MarketItemController {
         return ResponseEntity.ok(itemRepo.findAll());
     }
 
-    @GetMapping("public/market/items/user/{userId}")
+    @GetMapping("public/market/items/{userId}")
     public ResponseEntity<List<MarketItem>> getItemsByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(itemRepo.findByUploadedById(userId));
     }

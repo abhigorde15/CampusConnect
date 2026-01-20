@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { httpClient } from "../config/AxiosHelper";
 import MarketItemCard from "./MarketItemCard";
+import axios from "axios";
 
 const MarketplacePage = () => {
   const [items, setItems] = useState([]);
@@ -10,6 +11,7 @@ const MarketplacePage = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -19,20 +21,30 @@ const MarketplacePage = () => {
     phone: "",
     address: "",
     availability: "Available",
-    image: null, 
+    image: null,
   });
 
   useEffect(() => {
     fetchItems();
+    loadRazorpayScript();
   }, []);
- const token = localStorage.getItem('token')
+
   const fetchItems = async () => {
     try {
       const res = await httpClient.get("api/public/market/items");
-      setItems(res.data); 
+      setItems(res.data);
     } catch (err) {
       toast.error("Failed to fetch items");
     }
+  };
+
+  // ✅ Load Razorpay SDK dynamically
+  const loadRazorpayScript = () => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => setRazorpayLoaded(true);
+    script.onerror = () => toast.error("Failed to load Razorpay SDK");
+    document.body.appendChild(script);
   };
 
   const filteredItems = items.filter(
@@ -50,73 +62,80 @@ const MarketplacePage = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    try {
-      const data = new FormData();
-      for (const key in formData) {
-        data.append(key, formData[key]);
-      }
+  const handleRazorpay = async (item) => {
+    const userId = localStorage.getItem("userId"); // store this after login
 
-      const res = await httpClient.post("api/item", data, {
-  headers: {
-    "Content-Type": "multipart/form-data",
-    Authorization: `Bearer ${token}`,
-  },
-});
-
-
-      toast.success("Item posted successfully!");
-      setShowModal(false);
-      setFormData({
-        title: "",
-        price: "",
-        condition_item: "Good",
-        category: "",
-        phone: "",
-        address: "",
-        availability: "Available",
-        image: null,
-      });
-      fetchItems();
-    } catch (err) {
-      toast.error("Failed to post item");
+    if (!razorpayLoaded) {
+      toast.error("Razorpay SDK not loaded yet");
+      return;
     }
-  };
 
-  const handleRazorpay = async (amount) => {
     try {
-      const res = await httpClient.post("api/payment/create-order", {
-        amount: amount * 100,
+      
+      const response = await axios.post("http://localhost:8080/api/payment", {
+        amount: item.price,
+        userId: userId,
+        itemId: item.id,
+        itemName: item.title,
       });
 
-      const { id: order_id, currency } = res.data;
+      const orderData = response.data;
+      const orderId = orderData.id;
 
+
+     
       const options = {
-        key: "YOUR_RAZORPAY_PUBLIC_KEY", // replace with your key
-        amount: amount * 100,
-        currency,
-        name: "CampusConnect",
-        description: "Marketplace Item Purchase",
-        order_id,
-        handler: function (response) {
-          toast.success("Payment Successful!");
-          console.log(response);
-          // Optionally, call backend to verify and save
+        key: "rzp_test_RTiF5DAIvcu5qd", 
+        amount: item.price * 100,
+        currency: "INR",
+        name: "CampusConnect Marketplace",
+        description: `Payment for ${item.title}`,
+        image: "/NewLogo.png",
+        order_id: orderId,
+        handler: async function (response) {
+          toast.success("Payment successful!");
+          console.log("Payment ID:", response.razorpay_payment_id);
+          console.log("Order ID:", response.razorpay_order_id);
+          console.log("Signature:", response.razorpay_signature);
+
+        
+          try {
+            await axios.post("http://localhost:8080/api/payment/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              userId : localStorage.getItem('userId'),
+            });
+            toast.success("Payment verified & saved!");
+          } catch (err) {
+            console.error("Verification failed:", err);
+            toast.error("Verification failed. Please contact support.");
+          }
         },
         prefill: {
           name: "Abhishek Gorde",
-          email: "abhishek@example.com",
-          contact: "9999999999",
+          email: "abhishekgorde@example.com",
+          contact: "8888888888",
+        },
+        notes: {
+          item_name: item.title,
+          item_id: item.id,
         },
         theme: {
-          color: "#3b82f6",
+          color: "#2563eb",
         },
       };
 
       const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (response) {
+        console.error("Payment failed:", response.error);
+        toast.error("Payment failed! Try again.");
+      });
+
       rzp.open();
-    } catch (err) {
-      toast.error("Failed to initiate Razorpay payment");
+    } catch (error) {
+      console.error("Error initiating payment:", error);
+      toast.error("Payment initialization failed!");
     }
   };
 
@@ -130,6 +149,7 @@ const MarketplacePage = () => {
         Buy, sell, or exchange your academic items easily within campus.
       </p>
 
+      {/* Filter & Search */}
       <div className="flex flex-wrap gap-4 justify-center mb-6">
         <select
           value={category}
@@ -157,6 +177,7 @@ const MarketplacePage = () => {
         </button>
       </div>
 
+      {/* Item List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {filteredItems.map((item) => (
           <MarketItemCard
@@ -170,94 +191,6 @@ const MarketplacePage = () => {
         ))}
       </div>
 
-      {/* Post Item Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Post New Item</h2>
-            <input
-              name="title"
-              placeholder="Item title"
-              onChange={handleInput}
-              className="w-full mb-2 px-4 py-2 border rounded"
-              value={formData.title}
-            />
-            <input
-              name="price"
-              placeholder="Price"
-              onChange={handleInput}
-              className="w-full mb-2 px-4 py-2 border rounded"
-              value={formData.price}
-            />
-            <input
-              name="phone"
-              placeholder="Contact Number"
-              onChange={handleInput}
-              className="w-full mb-2 px-4 py-2 border rounded"
-              value={formData.phone}
-            />
-            <input
-              name="address"
-              placeholder="Pickup Address"
-              onChange={handleInput}
-              className="w-full mb-2 px-4 py-2 border rounded"
-              value={formData.address}
-            />
-            <input
-              type="file"
-              name="image"
-              onChange={handleInput}
-              className="w-full mb-2"
-            />
-            <select
-              name="availability"
-              onChange={handleInput}
-              className="w-full mb-2 px-4 py-2 border rounded"
-              value={formData.availability}
-            >
-              <option>Available</option>
-              <option>Sold</option>
-              <option>Reserved</option>
-            </select>
-            <select
-              name="condition"
-              onChange={handleInput}
-              className="w-full mb-2 px-4 py-2 border rounded"
-              value={formData.condition}
-            >
-              <option>New</option>
-              <option>Good</option>
-              <option>Used</option>
-            </select>
-            <select
-              name="category"
-              onChange={handleInput}
-              className="w-full mb-4 px-4 py-2 border rounded"
-              value={formData.category}
-            >
-              <option>Books</option>
-              <option>Electronics</option>
-              <option>Stationery</option>
-              <option>Bicycles</option>
-            </select>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-              >
-                Post
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Item Details Modal */}
       {showDetailModal && selectedItem && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -268,14 +201,31 @@ const MarketplacePage = () => {
               className="w-full h-48 object-cover rounded mb-4"
             />
             <h2 className="text-xl font-bold mb-2">{selectedItem.title}</h2>
-            <p><strong>Price:</strong> ₹{selectedItem.price}</p>
-            <p><strong>Condition:</strong> {selectedItem.condition}</p>
-            <p><strong>Category:</strong> {selectedItem.category}</p>
-            <p><strong>Seller:</strong> {selectedItem.seller}</p>
-            <p><strong>Phone:</strong> {selectedItem.phone}</p>
-            <p><strong>Address:</strong> {selectedItem.address}</p>
-            <p><strong>Availability:</strong> {selectedItem.availability}</p>
-            <p className="text-sm text-gray-500">Posted on {selectedItem.date}</p>
+            <p>
+              <strong>Price:</strong> ₹{selectedItem.price}
+            </p>
+            <p>
+              <strong>Condition:</strong> {selectedItem.condition}
+            </p>
+            <p>
+              <strong>Category:</strong> {selectedItem.category}
+            </p>
+            <p>
+              <strong>Seller:</strong> {selectedItem.seller}
+            </p>
+            <p>
+              <strong>Phone:</strong> {selectedItem.phone}
+            </p>
+            <p>
+              <strong>Address:</strong> {selectedItem.address}
+            </p>
+            <p>
+              <strong>Availability:</strong> {selectedItem.availability}
+            </p>
+            <p className="text-sm text-gray-500">
+              Posted on {selectedItem.date}
+            </p>
+
             <div className="flex justify-between mt-4">
               <button
                 onClick={() => setShowDetailModal(false)}
@@ -293,7 +243,7 @@ const MarketplacePage = () => {
                   Pay in Cash
                 </button>
                 <button
-                  onClick={() => handleRazorpay(selectedItem.price)}
+                  onClick={() => handleRazorpay(selectedItem)}
                   className="px-4 py-2 bg-green-600 text-white rounded"
                 >
                   Pay via Razorpay
