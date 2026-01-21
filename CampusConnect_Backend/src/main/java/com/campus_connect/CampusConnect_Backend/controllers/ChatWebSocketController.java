@@ -15,7 +15,7 @@ import com.campus_connect.CampusConnect_Backend.repository.ChatGroupRepository;
 import com.campus_connect.CampusConnect_Backend.repository.ChatMessageRepository;
 
 @Controller
-@CrossOrigin(origins = "https://campus-connect-amber-nine.vercel.app/")
+@CrossOrigin(origins = "https://campus-connect-amber-nine.vercel.app")
 public class ChatWebSocketController {
 
     @Autowired

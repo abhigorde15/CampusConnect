@@ -15,6 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins="https://campus-connect-amber-nine.vercel.app")
 public class PaymentController {
 
     private final PaymentService paymentService;
