@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+
 import './App.css';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -13,16 +13,17 @@ import AdminProfilePage from './pages/AdminProfilePage';
 import UserProfilePage from './pages/UserProfilePage';
 import MarketplacePage from './pages/MarketPlace';
 import EmailVerification from './components/EmailVerification';
+import EventsPage from './pages/EventsPage';
 
 
 
 function App() {
-  
+
 
   return (
     <BrowserRouter>
       <Navbar />
-     
+
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path='/notes' element={<NotesPage />} />
@@ -33,11 +34,12 @@ function App() {
         <Route path='/admin/profile' element={<AdminProfilePage />} />
         <Route path='/user/profile' element={<UserProfilePage />} />
         <Route path='/marketplace' element={<MarketplacePage />} />
+        <Route path='/events' element={<EventsPage />} />
         <Route path='/verify' element={<EmailVerification />} />
       </Routes>
-      
+
       <Footer />
-     
+
     </BrowserRouter>
   );
 }

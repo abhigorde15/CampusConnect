@@ -47,14 +47,15 @@ const ChatPage = () => {
       reconnectDelay: 5000,
       onConnect: () => {
         stompClient.subscribe(`/topic/${groupName}`, (message) => {
-          
+          // Parse the saved ChatMessage entity with ID and timestamp
           const body = JSON.parse(message.body);
           setMessages((prev) => [
             ...prev,
             {
+              id: body.id, // Now includes the database-generated ID
               sender: body.senderName,
               content: body.content,
-              time: new Date().toLocaleTimeString([], {
+              time: new Date(body.timestamp).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               }),
@@ -87,26 +88,27 @@ const ChatPage = () => {
 
     setInput("");
   };
-const handleDelete = async (id) => {
-  const token = localStorage.getItem("token"); 
-  if (!token) {
-    alert("You're not logged in.");
-    return;
-  }
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You're not logged in.");
+      return;
+    }
 
-  try {
-    await httpClient.delete(`api/message/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+       console.log(id)
+      await httpClient.delete(`api/message/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    setMessages((prev) => prev.filter((msg) => msg.id !== id));
-  } catch (err) {
-    alert("Failed to delete message.");
-    console.error(err);
-  }
-};
+      setMessages((prev) => prev.filter((msg) => msg.id !== id));
+    } catch (err) {
+      alert("Failed to delete message.");
+      console.error(err);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -121,22 +123,22 @@ const handleDelete = async (id) => {
           <div
             key={i}
             className={`flex ${msg.sender === name ? "justify-end" : "justify-start"}`}
-            onClick={()=>{
-                if(msg.sender === name){
+            onClick={() => {
+              if (msg.sender === name) {
                 const confirmDelete = window.confirm("Do you want delete this message")
-                if(confirmDelete){
+                if (confirmDelete) {
+                 
                   handleDelete(msg.id)
                 }
               }
             }
-             }
+            }
           >
             <div
-              className={`max-w-sm px-4 py-2 rounded-lg shadow-md ${
-                msg.sender === name
+              className={`max-w-sm px-4 py-2 rounded-lg shadow-md ${msg.sender === name
                   ? "bg-green-500 text-white"
                   : "bg-white border text-gray-800"
-              }`}
+                }`}
             >
               <div className="text-sm font-semibold mb-1">{msg.sender}</div>
               <div>{msg.content}</div>

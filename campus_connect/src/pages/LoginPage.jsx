@@ -26,7 +26,7 @@ const LoginPage = () => {
       localStorage.setItem("token", res.token); 
       localStorage.setItem("userId", res.userId);
       toast.success("Login successful");
-      setTimeout(() => navigate("/"), 1000); // redirect after login
+      setTimeout(() => navigate("/"), 1000);
     } catch (err) {
       toast.error(err.response?.data || "Invalid credentials");
     }

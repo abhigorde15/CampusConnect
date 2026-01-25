@@ -9,69 +9,112 @@ const AdminProfilePage = () => {
   const [showAddGroupForm, setShowAddGroupForm] = useState(false);
   const [newGroup, setNewGroup] = useState({ title: '', description: '' });
 
-let token = localStorage.getItem('token');
-
-  
+  let token = localStorage.getItem('token');
+  const [events, setEvents] = useState([]);
+const [showEventForm, setShowEventForm] = useState(false);
+const [eventForm, setEventForm] = useState({
+  title: "",
+  description: "",
+  eventDate: "",
+  location: "",
+  organizer: "",
+  imageUrl: "",
+  category: "Technical",
+  registrationLink: ""
+});
 useEffect(() => {
-  token = localStorage.getItem('token');
-  httpClient.get('api/chat-groups',{
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => setChatGroups(data))
-    .catch(() => console.error('Failed to load chat groups'));
-}, []);
-useEffect(() => {
-  token = localStorage.getItem('token');
- httpClient.get('/chat-groups', {
-  headers: { Authorization: `Bearer ${token}` }
-})
-.then((res) => setChatGroups(res.data)) 
-.catch((err) => console.error('Failed to load chat groups'));
+  httpClient.get("api/public/events")
+    .then(res => setEvents(res.data))
+    .catch(() => console.error("Failed to load events"));
 }, []);
 
-const handleAddGroup = async () => {
-  if (newGroup.title.trim() === '') return;
+
+  useEffect(() => {
+    token = localStorage.getItem('token');
+
+    // Fetch chat groups
+    httpClient.get('api/public/groups', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => setChatGroups(res.data))
+      .catch(() => console.error('Failed to load chat groups'));
+  }, []);
+const handleAddEvent = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await httpClient.post(
+      "api/events",
+      eventForm,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setEvents([...events, res.data]);
+    setShowEventForm(false);
+  } catch (err) {
+    alert("Failed to create event");
+  }
+};
+
+const handleDeleteEvent = async (id) => {
+  if (!window.confirm("Delete this event?")) return;
 
   try {
+    await httpClient.delete(`api/events/${id}`);
+    setEvents(events.filter(e => e.id !== id));
+  } catch (err) {
+    alert("Failed to delete event");
+  }
+};
+
+  const handleAddGroup = async () => {
+    if (newGroup.title.trim() === '') return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await httpClient.post('api/chat/groups', {
+        name: newGroup.title,
+        description: newGroup.description
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+
+
+      if (!res.data) throw new Error('Failed to create group');
+
+      const created = res.data;
+      setChatGroups([...chatGroups, created]);
+      setNewGroup({ title: '', description: '' });
+      setShowAddGroupForm(false);
+    } catch (err) {
+      alert('Failed to create group');
+    }
+  };
+
+  const handleDeleteGroup = async (id) => {
     const token = localStorage.getItem('token');
-    const res = await httpClient.post('/chat-groups', newGroup, {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
 
+    try {
+      await httpClient.delete(`api/chat/groups/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-
-    if (!res.data ) throw new Error('Failed to create group');
-   
-    const created = res.data;
-    setChatGroups([...chatGroups, created]);
-    setNewGroup({ title: '', description: '' });
-    setShowAddGroupForm(false);
-  } catch (err) {
-    alert('Failed to create group');
-  }
-};
-
-const handleDeleteGroup = async (id) => {
-  const token = localStorage.getItem('token');
-
-  try {
-
-    await httpClient.delete(`/chat-groups/${id}`, {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
-
-    setChatGroups(chatGroups.filter((group) => group.id !== id));
-  } catch (err) {
-    alert('Failed to delete group');
-  }
-};
+      setChatGroups(chatGroups.filter((group) => group.id !== id));
+    } catch (err) {
+      alert('Failed to delete group');
+    }
+  };
 
 
 
@@ -133,9 +176,9 @@ const handleDeleteGroup = async (id) => {
           {chatGroups.map(group => (
             <li key={group.id} className="flex justify-between items-center border-b pb-2">
               <p>{group.name}</p>
-             <button onClick={() => handleDeleteGroup(group.id)} className="text-red-500 hover:text-red-700 text-sm">
-  Delete
-</button>
+              <button onClick={() => handleDeleteGroup(group.id)} className="text-red-500 hover:text-red-700 text-sm">
+                Delete
+              </button>
 
 
             </li>
@@ -178,7 +221,75 @@ const handleDeleteGroup = async (id) => {
           ))}
         </ul>
       </div>
+      <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-200">
+  <div className="flex justify-between items-center mb-4">
+    <h3 className="text-xl font-semibold">Events</h3>
+    <button
+      onClick={() => setShowEventForm(true)}
+      className="px-4 py-1 text-sm bg-blue-600 text-white rounded"
+    >
+      + Add Event
+    </button>
+  </div>
+
+  <ul className="space-y-2">
+    {events.map(event => (
+      <li key={event.id} className="flex justify-between items-center border-b pb-2">
+        <p>{event.title}</p>
+        <button
+          onClick={() => handleDeleteEvent(event.id)}
+          className="text-red-500 text-sm"
+        >
+          Delete
+        </button>
+      </li>
+    ))}
+  </ul>
+</div>
+{showEventForm && (
+  <div className="bg-white p-4 border rounded-xl mb-6">
+    <h3 className="font-semibold mb-2">Add Event</h3>
+
+    <input className="w-full p-2 border mb-2"
+      placeholder="Title"
+      value={eventForm.title}
+      onChange={e => setEventForm({ ...eventForm, title: e.target.value })}
+    />
+
+    <textarea className="w-full p-2 border mb-2"
+      placeholder="Description"
+      value={eventForm.description}
+      onChange={e => setEventForm({ ...eventForm, description: e.target.value })}
+    />
+
+    <input type="date" className="w-full p-2 border mb-2"
+      value={eventForm.eventDate}
+      onChange={e => setEventForm({ ...eventForm, eventDate: e.target.value })}
+    />
+
+    <input className="w-full p-2 border mb-2"
+      placeholder="Location"
+      value={eventForm.location}
+      onChange={e => setEventForm({ ...eventForm, location: e.target.value })}
+    />
+
+    <input className="w-full p-2 border mb-2"
+      placeholder="Organizer"
+      value={eventForm.organizer}
+      onChange={e => setEventForm({ ...eventForm, organizer: e.target.value })}
+    />
+
+    <div className="flex justify-end gap-2">
+      <button onClick={() => setShowEventForm(false)}>Cancel</button>
+      <button onClick={handleAddEvent} className="bg-blue-600 text-white px-3 py-1 rounded">
+        Save
+      </button>
     </div>
+  </div>
+)}
+
+    </div>
+    
   );
 };
 

@@ -46,7 +46,7 @@ const JoinCreateChat = () => {
         } else {
           toast.error("Error in joining room");
         }
-        console.log(error);
+      
       }
     }
   }

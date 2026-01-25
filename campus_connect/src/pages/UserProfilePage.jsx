@@ -8,25 +8,25 @@ const UserProfilePage = () => {
   const [purchases, setPurchases] = useState([]);
 
   const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId'); 
+  const userId = localStorage.getItem('userId');
   useEffect(() => {
     const fetchData = async () => {
       try {
-       
+
         const userRes = await httpClient.get('api/auth/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(userRes.data);
         console.log(userRes.data)
-       
+
         const notesRes = await httpClient.get(`api/notes/user/${userRes.data.id}`);
         setNotes(notesRes.data);
 
-       
+
         const listingsRes = await httpClient.get(`api/public/market/items/${userRes.data.id}`);
         setListings(listingsRes.data);
 
-       
+
         const purchasesRes = await httpClient.get(`api/user/${userRes.data.id}`);
         setPurchases(purchasesRes.data);
 
@@ -44,6 +44,19 @@ const UserProfilePage = () => {
       setNotes(prev => prev.filter(note => note.id !== id));
     } catch (err) {
       console.error('Failed to delete note:', err);
+    }
+  };
+
+  const handleDeleteMarketItem = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
+    try {
+      await httpClient.delete(`api/market/items/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setListings(prev => prev.filter(item => item.id !== id));
+    } catch (err) {
+      console.error('Failed to delete item:', err);
+      alert('Failed to delete item');
     }
   };
 
@@ -94,7 +107,7 @@ const UserProfilePage = () => {
                 </div>
                 <div className="flex gap-2">
                   <button className="text-blue-500 hover:text-blue-700 text-sm">Edit</button>
-                  <button className="text-red-500 hover:text-red-700 text-sm">Delete</button>
+                  <button onClick={() => handleDeleteMarketItem(item.id)} className="text-red-500 hover:text-red-700 text-sm">Delete</button>
                 </div>
               </li>
             ))}
