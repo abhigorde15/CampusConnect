@@ -8,4 +8,6 @@ import com.campus_connect.CampusConnect_Backend.models.ChatGroup;
 
 public interface ChatGroupRepository extends JpaRepository<ChatGroup, Integer> {
     Optional<ChatGroup> findByName(String name);
+ 
+
 }

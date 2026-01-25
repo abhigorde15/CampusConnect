@@ -24,8 +24,9 @@ public class ChatGroup {
 
     @Column(unique = true, nullable = false)
     private String name;
-
-    private String description; 
+   
+  
+	private String description; 
 
     @OneToMany(mappedBy = "chatGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

@@ -35,7 +35,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins="https://campus-connect-amber-nine.vercel.app")
+@CrossOrigin(origins="https://campus-connect-amber-nine.vercel.app/")
 public class AuthController {
     @Autowired
     private EmailService emailService;

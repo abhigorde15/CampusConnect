@@ -38,28 +38,33 @@ public class SecurityConfig {
 
     @Autowired
     private CustomAccessDeniedHandler accessDeniedHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults())   // ⭐ ADD THIS
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/ws/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedHandler))
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/ws/**", "/topic/**",
+                                "/app/**")
+                        .permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/verify").permitAll()
+                        .requestMatchers("/api/auth/user").authenticated()
+                        .requestMatchers("/api/public/**").permitAll() 
+                        .requestMatchers("/api/events/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedHandler))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -67,7 +72,6 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
- 
 
     @Bean
     public PasswordEncoder passwordEncoder() {

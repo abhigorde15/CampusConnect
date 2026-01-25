@@ -1,4 +1,5 @@
 package com.campus_connect.CampusConnect_Backend.controllers;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/")
-@CrossOrigin(origins="https://campus-connect-amber-nine.vercel.app")
+@CrossOrigin(origins = "https://campus-connect-amber-nine.vercel.app/")
 public class MarketItemController {
 
     @Autowired
@@ -32,8 +33,7 @@ public class MarketItemController {
     @Autowired
     private CloudinaryService cloudinaryService;
 
-    
-    @PostMapping("item")
+    @PostMapping("market/items")
     public ResponseEntity<MarketItem> createItem(
             @RequestParam String title,
             @RequestParam String price,
@@ -43,9 +43,8 @@ public class MarketItemController {
             @RequestParam String address,
             @RequestParam String availability,
             @RequestParam MultipartFile image,
-            HttpServletRequest request
-    ) throws IOException {
-    	String authHeader = request.getHeader("Authorization");
+            HttpServletRequest request) throws IOException {
+        String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Missing or invalid Authorization header");
         }
@@ -54,26 +53,24 @@ public class MarketItemController {
         String email = jwtUtil.extractUsername(token);
 
         User user = userRepo.findByEmail(email).orElseThrow();
-        System.out.println("User.........."+user);
-        String imageUrl =  "https://res.cloudinary.com/dguygzrkp/image/upload/v1751135815/notes/yxumfpbtkjmmflga2g3z.png" ;// cloudinaryService.uploadFile(image);
+        System.out.println("User.........." + user);
+        String imageUrl = "https://res.cloudinary.com/dguygzrkp/image/upload/v1751135815/notes/yxumfpbtkjmmflga2g3z.png";// cloudinaryService.uploadFile(image);
 
         MarketItem item = new MarketItem(
-        	    title,
-        	    price,
-        	    condition_item,
-        	    category,
-        	    phone,
-        	    address,
-        	    availability,
-        	    imageUrl,
-        	    LocalDate.now(),         
-        	    user                     
-        	);
+                title,
+                price,
+                condition_item,
+                category,
+                phone,
+                address,
+                availability,
+                imageUrl,
+                LocalDate.now(),
+                user);
 
         return ResponseEntity.ok(itemRepo.save(item));
     }
 
-   
     @GetMapping("public/market/items")
     public ResponseEntity<List<MarketItem>> getAllItems() {
         return ResponseEntity.ok(itemRepo.findAll());
@@ -84,9 +81,23 @@ public class MarketItemController {
         return ResponseEntity.ok(itemRepo.findByUploadedById(userId));
     }
 
-    
     @DeleteMapping("market/items/{id}")
-    public ResponseEntity<String> deleteItem(@PathVariable int id) {
+    public ResponseEntity<?> deleteItem(@PathVariable int id, HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        String token = authHeader.substring(7);
+        String email = jwtUtil.extractUsername(token);
+        User user = userRepo.findByEmail(email).orElseThrow();
+
+        MarketItem item = itemRepo.findById(id).orElseThrow(() -> new RuntimeException("Item not found"));
+
+        // Check if the user is the owner
+        if (item.getUploadedBy().getId() != user.getId()) {
+            return ResponseEntity.status(403).body("You are not allowed to delete this item");
+        }
+
         itemRepo.deleteById(id);
         return ResponseEntity.ok("Item deleted successfully");
     }

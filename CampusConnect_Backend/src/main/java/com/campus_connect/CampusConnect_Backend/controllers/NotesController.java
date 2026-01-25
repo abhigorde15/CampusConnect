@@ -28,7 +28,7 @@ public class NotesController {
     private UserRepository userRepository;
     @Autowired
     private JwtUtil jwtUtil;
-  
+
     @GetMapping("/auth/notes")
     public List<Note> getAllNotes() {
         return noteService.getAllNotes();
@@ -40,10 +40,8 @@ public class NotesController {
             @RequestParam("branch") String branch,
             @RequestParam("semester") String semester,
             @RequestParam("file") MultipartFile file,
-            HttpServletRequest request
-    ) throws IOException, java.io.IOException
-    {
-       
+            HttpServletRequest request) throws IOException, java.io.IOException {
+
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Missing or invalid Authorization header");
@@ -53,15 +51,14 @@ public class NotesController {
         String email = jwtUtil.extractUsername(token);
 
         User user = userRepository.findByEmail(email).orElseThrow();
-        System.out.println("User.........."+user);
-        String fileUrl  = null;
-    //try {
-    	 fileUrl ="https://res.cloudinary.com/dguygzrkp/image/upload/v1751135815/notes/yxumfpbtkjmmflga2g3z.png";    // cloudinaryService.uploadFile(file);
-//    }
-//   catch(java.io.IOException exception) {
-//   	throw new java.io.IOException("Cloudinary Setup Exception"+exception);
-//    }
-        
+      
+        String fileUrl = null;
+        // try {
+        fileUrl =  cloudinaryService.uploadFile(file);
+        // }
+        // catch(java.io.IOException exception) {
+        // throw new java.io.IOException("Cloudinary Setup Exception"+exception);
+        // }
 
         Note note = new Note();
         note.setTitle(title);
@@ -74,9 +71,10 @@ public class NotesController {
         return noteService.saveNote(note);
     }
 
-
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/notes/{id}")
     public void deleteNote(@PathVariable int id) {
+        // In a real app, you should check if the user owning the token
+        // is the one who uploaded the note.
         noteService.deleteNote(id);
     }
 

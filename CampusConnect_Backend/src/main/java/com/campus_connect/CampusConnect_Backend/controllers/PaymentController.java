@@ -1,6 +1,5 @@
 package com.campus_connect.CampusConnect_Backend.controllers;
 
-
 import com.campus_connect.CampusConnect_Backend.models.Payment;
 import com.campus_connect.CampusConnect_Backend.models.PaymentRequest;
 import com.campus_connect.CampusConnect_Backend.models.PaymentResponse;
@@ -15,33 +14,30 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins="https://campus-connect-amber-nine.vercel.app")
+@CrossOrigin(origins = "https://campus-connect-amber-nine.vercel.app/")
 public class PaymentController {
 
     private final PaymentService paymentService;
+
     public PaymentController(PaymentService paymentService) {
         this.paymentService = paymentService;
     }
 
-   
     @PostMapping("/payment")
     public ResponseEntity<?> createOrder(@RequestBody PaymentRequest request) {
         try {
             Map<String, Object> orderData = paymentService.createOrder(
-                request.getAmount(),
-                request.getUserId(),
-                request.getItemId(),
-                request.getItemName()
-            );
+                    request.getAmount(),
+                    request.getUserId(),
+                    request.getItemId(),
+                    request.getItemName());
             return ResponseEntity.ok(orderData);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body(Map.of("error", e.getMessage()));
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
-
-    
     @PostMapping("/payment/verify")
     public ResponseEntity<String> verifyPayment(@RequestBody Map<String, Object> payload) {
         String razorpay_order_id = (String) payload.get("razorpay_order_id");
@@ -71,9 +67,8 @@ public class PaymentController {
         }
     }
 
-   
     @GetMapping("/user/{userId}")
-    public List<Payment> getPaymentsByUser(@PathVariable Long userId) {
-        return paymentService.getPaymentsByUser(userId);
+    public List<Payment> getPaymentsByUser(@PathVariable int userId) {
+        return paymentService.getPaymentsByUser((long) userId);
     }
 }
